@@ -1,10 +1,3 @@
-// -----------------------------------------------------------------
-// Provides mutliple tools that makes you live as a APEX developer easier
-//
-// @Name	MapTools
-// @Author	Anton Zeef <azeef@deloitte.nl>
-// @Created	2013-05-14
-// -----------------------------------------------------------------
 /**
  * Tools for converting from/to Internation Bank Account Numbers (IBAN, for short).
  *
@@ -16,8 +9,8 @@
  *
  * See http://en.wikipedia.org/wiki/International_Bank_Account_Number 
  */
-public class IBanTools {
-
+public class IBANTool {
+	
 	/** Indicates an error with checking/converting to/from iban numbers */
 	public class IBANException extends Exception {}
 
@@ -28,7 +21,7 @@ public class IBanTools {
 	 */
 	public static String toIBAN( String dutchBankAccountNr, String bankCode ) {
 		// first check if it's non-empty, all-digits and reasonably sized
-		if( String.isBlank( dutchBankAccountNr ) || !dutchBankAccountNr.isNumeric() ) {
+		if( String.isBlank( dutchBankAccountNr ) || !dutchBankAccountNr.isNumeric() || dutchBankAccountNr.length() > 10 ) {
 			throw new IBANException( 'Invalid Dutch bankaccount number: \'' + dutchBankAccountNr + '\'' );
 		}
 		// and check if the bankcode is valid
@@ -37,7 +30,7 @@ public class IBanTools {
 		}
 		
 		// check if it's a valid dutch bankaccount number
-		if( dutchBankAccountNr.length() > 10 || ( dutchBankAccountNr.length() >= 9 && !compliesToElfTest( dutchBankAccountNr ) ) ) {
+		if( dutchBankAccountNr.length() >= 9 && !compliesToElfTest( dutchBankAccountNr ) ) {
 			throw new IBANException( 'Invalid Dutch bankaccount number: \'' + dutchBankAccountNr + '\'' );
 		} /*else {
 			former 'postbank' bankaccountnr, number of digits is between 1 and 8 (inclusive), no check possible...
@@ -59,10 +52,7 @@ public class IBanTools {
 	 *
 	 * Note: only works if the passed account number is fully numeric.
 	 */
-	public static Boolean compliesToElfTest( String bankAccountNumber ) {
-		if( bankAccountNumber.length() > 10 || bankAccountNumber.length() < 9 ) {
-			return false;
-		}
+	static Boolean compliesToElfTest( String bankAccountNumber ) {
 		Integer tester = 0;
 		String sorted = bankAccountNumber.reverse();
 		for( Integer i = 0; i < sorted.length(); i++ ) {
@@ -92,13 +82,17 @@ public class IBanTools {
 	public static String generateControlDigits( String bban, String landCode ) {
 		// generate the control string
 		String controlS = '';
-		// - replace all characters in the iban with their base-36 equivalent
+		// - replace all characters in the iban with their base-36 value
 		for( Integer i = 0; i < bban.length(); i++ ) {
 			String s = bban.substring( i, i + 1 );
 			if( s.isNumeric() ) {
 				controlS += s;
 			} else if( s.isAlpha() && s.isAsciiPrintable() ) {
-				controlS += letterCodes.get( s.toUpperCase() );
+				String newS = letterCodes.get( s.toUpperCase() );
+				if( newS == null ) {
+					throw new IBANException( 'character at index ' + i + ' of basic bank account number \'' + bban + '\' is not ascii-alphanumeric' );
+				}
+				controlS += newS;
 			} else {
 				throw new IBANException( 'character at index ' + i + ' of basic bank account number \'' + bban + '\' is not ascii-alphanumeric' );
 			}
@@ -107,9 +101,13 @@ public class IBanTools {
 		for( Integer i = 0; i < landCode.length(); i++ ) {
 			String s = landCode.substring( i, i + 1 );
 			if( s.isAlpha() && s.isAsciiPrintable() ) {
-				controlS += letterCodes.get( s.toUpperCase() );
+				String newS = letterCodes.get( s.toUpperCase() );
+				if( newS == null ) {
+					throw new IBANException( 'character at index ' + i + ' of landcode \'' + landCode + '\' is not ascii-alpha' );
+				}
+				controlS += newS;
 			} else {
-				throw new IBANException( 'character at index ' + i + ' of landcode \'' + landCode + '\' is not an ascii-alpha' );
+				throw new IBANException( 'character at index ' + i + ' of landcode \'' + landcode + '\' is not ascii-alpha' );
 			}
 		}
 		// add the final '00'
@@ -145,36 +143,74 @@ public class IBanTools {
 		}
 		// first two characters should be the landcode
 		String landCode = iban.substring( 0, 2 ).toUpperCase();
-		//system.debug( '### landcode = ' + landCode );
+		//Logger.info( '### landcode = ' + landCode );
 		// next two characters are the control digits
 		String controlS = iban.substring( 2, 4 );
-		//system.debug( '### controlS = ' + controlS );
+		//Logger.info( '### controlS = ' + controlS );
 		if( !controlS.isNumeric() ) {
 			return false;
 		}
 		// basic bank account number starts at index 4
 		String bban = iban.substring( 4 );
-		//system.debug( '### bban = ' + bban );
+		//Logger.info( '### bban = ' + bban );
 		if( landCode == 'NL' ) {
 			if( iban.length() != 18 ) {
 				return false;
 			}
-			String controlDigits = generateControlDigits( bban, 'NL' );
+			String controlDigits = generateControlDigits( bban, landCode );
 			return controlDigits == controlS;
 		} else {
 			return false;
 		}
 	}
-	
+
+	/**
+	 * Checks the passed dutch bank account number for the eleven test
+	 */
+	public static Boolean checkDutchBankAccountNumber( String bankAccountNumber ) {
+		if( String.isBlank( bankAccountNumber ) || bankAccountNumber.length() > 10 || !bankAccountNumber.isNumeric() ) {
+			return false;
+		}
+		if( bankAccountNumber.length() < 9 ) {
+			// former dutch postbank number, between 1 and 8 digits, no way in checking...
+			return true;
+		}
+		// normal dutch bank account numbers are either 9 or 10 digits long and must comply to the elf test
+		return compliesToElfTest( bankAccountNumber );
+	}
+
+	/**
+	 * Converts the passed IBAN to a bic code. Only works for Dutch IBANs for the moment.
+	 */
+	public static String ibanToBic( String iban ) {
+		// for this method to work, we only assume IBANs are at least 8 characters
+		// with the bankcode residing in characters 4-8
+		if( iban == null || iban.length() < 8 ) {
+			return null;
+		}
+		String bankCode = iban.substring( 4, 8 ).toUpperCase();
+		IBAN_To_BIC__c ibanToBic = IBAN_To_BIC__c.getInstance( bankCode );
+		if( ibanToBic == null ) {
+			return null;
+		}
+		return ibanToBic.BIC__c;
+	}
+
+	/**
+	 * Returns a list of all the letters of the alphabet sorted from A to Z.
+	 */
 	public static List<String> allLetters {
 		get {
 			if( allLetters == null ) {
-				allLetters = new String[] { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'U', 'V', 'W', 'X', 'Y', 'Z' };
+				allLetters = new String[] { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
 			}
 			return allLetters;
 		} set;
 	}
 
+	/**
+	 * Maps the letters from the alphabet to their numeric code (between A=11 and Z=36) to be used when generating control digits for iban numbers.
+	 */
 	public static Map<String, String> letterCodes {
 		get {
 			if( letterCodes == null ) {
