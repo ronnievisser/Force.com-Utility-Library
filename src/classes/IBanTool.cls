@@ -9,7 +9,7 @@
  *
  * See http://en.wikipedia.org/wiki/International_Bank_Account_Number 
  */
-public class IBANTools {
+public class IBANTool {
 	
 	/** Indicates an error with checking/converting to/from iban numbers */
 	public class IBANException extends Exception {}
