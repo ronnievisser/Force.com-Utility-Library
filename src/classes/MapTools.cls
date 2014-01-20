@@ -70,4 +70,22 @@ public class MapTools {
     	
     	return null;
     }
+    
+    /**
+	 * Handles the addition of a single value for a key in a set-valued map, also known as a multimap.
+	 * 
+	 * Null-parameters are handled gracefully: nothing is done when nulls are passed.
+	 */
+	public static void addMultiValue( Map<Id, Set<Id>> multiMap, Id key, Id value ) {
+		if( multiMap == null || key == null || value == null) {
+			// simply bail out if null parameter passed
+			return;
+		}
+		Set<Id> objects = multiMap.get( key );
+		if( objects == null ) {
+			objects = new Set<Id>();
+			multiMap.put( key, objects );
+		}
+		objects.add( value );
+	}
 }
