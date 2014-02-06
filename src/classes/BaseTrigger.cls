@@ -5,7 +5,7 @@
  * USAGE:
  * In your trigger file the only line you need to add is the following. This example works with accounts where AccountTriggerHandler is the file that handles your logic
  * TriggerFactory.execute( new AccountTriggerHandler( ) );
- * AccountTriggerHandler can implement any method named below, it's not required to add every method, so just add the ones you need in the handler file
+ * AccountTriggerHandler can implement any methods named below, it's not required to add every method, so just add the ones you need in the handler file
  */
 
 public abstract class BaseTrigger implements ITrigger {
