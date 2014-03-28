@@ -1,5 +1,5 @@
 /**
- * To implement the trigger functionaltiet you need to the following files
+ * To implement the trigger functionality you need to the following files
  * BaseTrigger.cls, ITrigger.cls, TriggerFactory.cls, Logger.cls
  *
  * USAGE:
