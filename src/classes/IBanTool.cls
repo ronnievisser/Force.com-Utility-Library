@@ -7,6 +7,10 @@
  * - ZZZZZZZZZZ is the account identifier, which has a different format for each country
  * 		- Dutch account identifiers are built up of 14 characters, the first four making up the bankcode and the last 10 are for the accountnumber 
  *
+ * Create custom setting for BIC conversion
+ * Name IBAN_To_BIC__c
+ * Custom fields: Bank_Name__c, BIC__c, Remark__c
+ * 
  * See http://en.wikipedia.org/wiki/International_Bank_Account_Number 
  */
 public class IBANTool {
