@@ -2,7 +2,7 @@
 // Provides mutliple tools that makes you live as a APEX developer easier
 //
 // @Name	MapTools
-// @Author	Ronnie Visser <ronvisser@deloitte.nl>
+// @Author	Ronnie Visser
 // @Created	2013-04-14
 // -----------------------------------------------------------------
 public class MapTools {
