@@ -2,7 +2,7 @@
 // Provides mutliple tools that makes you live as a APEX developer easier
 //
 // @Name	ListUtil
-// @Author	Ronnie Visser <r.visser@vivens.com>
+// @Author	Ronnie Visser
 // @Created	2013-03-15
 // -----------------------------------------------------------------
 global class ListUtil {
