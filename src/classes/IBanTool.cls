@@ -9,7 +9,7 @@
  *
  * Create custom setting for BIC conversion
  * Name IBAN_To_BIC__c
- * Custom fields: Bank_Name__c, BIC__c, Remark__c
+ * Custom fields: Bank_Name__c (4 alpha capitals), BIC__c, Remark__c
  * 
  * See http://en.wikipedia.org/wiki/International_Bank_Account_Number 
  */
